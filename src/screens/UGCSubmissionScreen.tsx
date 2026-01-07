@@ -42,11 +42,17 @@ export default function UGCSubmissionScreen({ onBack }: { onBack: () => void }) 
     setIsSubmitting(true);
 
     // TODO: Integrate with Firebase Cloud Function - suggestUserTitle(uid, titleName)
-    // This will call the backend function that:
+    // This will call the backend function (functions/src/ugc/suggestTitle.ts) that:
     // 1. Performs auto-filtering (profanity, length, etc.)
     // 2. Uses AI to infer tags for the title
-    // 3. Stores submission in pending_review queue
-    // Example: await suggestUserTitle(auth.currentUser.uid, titleName);
+    // 3. Stores submission in pending_review queue in Firestore
+    // 
+    // Implementation example:
+    // import { httpsCallable } from 'firebase/functions';
+    // import { functions } from '@/main';
+    // const suggestTitle = httpsCallable<{ name: string }, { success: boolean }>(functions, 'suggestUserTitle');
+    // const result = await suggestTitle({ name: titleName });
+    // if (!result.data.success) { /* handle error */ }
     
     // Simulated submission for UI demonstration
     setTimeout(() => {

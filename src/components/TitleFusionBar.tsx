@@ -61,7 +61,7 @@ export function TitleFusionBar({
           </button>
 
           <button
-            onClick={onFuse}
+            onClick={() => onFuse?.()}
             disabled={!canFuse}
             className={`flex-1 rounded-xl py-3 text-sm font-medium text-white transition-all
               ${

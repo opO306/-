@@ -62,7 +62,7 @@ function IdentityCardCarousel() {
   );
 }
 
-function ActionSection() {
+function ActionSection({ onNavigate }: { onNavigate: (screen: string) => void }) {
   const { dispatch, actions } = useGame();
   const { generateGameSituation } = actions;
   const [showPhilosophy, setShowPhilosophy] = useState(false);
@@ -123,7 +123,7 @@ function ActionSection() {
               <span><strong>반복 플레이:</strong> 환생을 통해 새로운 칭호를 발견하세요.</span>
             </div>
             <button
-              onClick={() => setCurrentScreen("philosophy")}
+              onClick={() => onNavigate("philosophy")}
               className="mt-2 w-full text-center text-xs text-purple-600 hover:text-purple-800 font-medium py-2 bg-white rounded-lg border border-purple-200 hover:bg-purple-50 transition-colors"
             >
               자세히 보기 →
@@ -286,7 +286,7 @@ export default function HomeScreen() {
       <AIStatusIndicator aiEnabled={true} usingFallback={false} />
       <HeaderStats />
       <IdentityCardCarousel />
-      <ActionSection />
+      <ActionSection onNavigate={(screen) => setCurrentScreen(screen as any)} />
       <PrestigeProgress progress={80} message="환생 시 신규 칭호 가능" /> {/* TODO: 환생 진행률 및 메시지 동적 연동 */}
       <BottomNav onNavigate={(tab) => {
         if (tab === "홈") setCurrentScreen("home");
