@@ -20,7 +20,7 @@ const mockTitles: PlayerTitle[] = [
   },
 ];
 
-export default function TitleCodexScreen() {
+export default function TitleCodexScreen({ onBack }: { onBack?: () => void }) {
   const [titles, setTitles] = useState<PlayerTitle[]>(mockTitles);
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -34,7 +34,14 @@ export default function TitleCodexScreen() {
 
   return (
     <main className="min-h-screen bg-[#F7F8FA] px-5 pt-6 pb-32">
-      <h1 className="text-xl font-semibold mb-4">칭호 도감</h1>
+      <div className="flex items-center mb-4">
+        {onBack && (
+          <button onClick={onBack} className="mr-3 text-gray-600">
+            ←
+          </button>
+        )}
+        <h1 className="text-xl font-semibold">칭호 도감</h1>
+      </div>
 
       <div className="space-y-3">
         {titles.map((t) => (
