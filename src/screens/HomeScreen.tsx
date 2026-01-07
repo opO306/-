@@ -18,7 +18,7 @@ function suggestInitialJob(ctx: { firstChoice: "observe" | "intervene" | "distor
 }
 
 function HeaderStats() {
-  const [state] = useGame();
+  const [state, _, __, ___] = useGame();
   const { fame, famePerSec: fps, archetype } = state; // archetype 가져오기
 
   const summary = generateArchetypeSummary(archetype);
@@ -26,7 +26,7 @@ function HeaderStats() {
   return (
     <section className="mb-8">
       <div className="text-4xl font-semibold tracking-tight">
-        {fmt(fame)} <span className="text-base font-medium text-gray-400">/s</span>
+        {fmt(fame)} <span className="text-base font-medium text-gray-400">{fmt(fps)}/s</span>
       </div>
       <div className="mt-1 text-sm text-gray-500">
         {summary}
@@ -102,6 +102,7 @@ export default function HomeScreen() {
       );
       setCurrentSituationOnContinue(undefined); // 직업 제안 버튼 사용 시 onContinue는 사용하지 않으므로 undefined
       setShowJobSuggestion(true); // 직업 제안 버튼을 바로 띄우도록 설정
+    }
   }, [currentChainLength, currentJobId, showJobSuggestion]);
 
   // 직업 제안 UI 렌더링
@@ -123,7 +124,7 @@ export default function HomeScreen() {
           setCurrentSituationText(undefined);
           // TODO: 보류 시 재제안 쿨타임 로직 추가 (X5 항목)
         }}
-        onContinue={() => {}} // 기본 onContinue는 사용하지 않으므로 빈 함수 전달
+        onContinue={currentSituationOnContinue || (() => {})} // 기본 onContinue는 사용하지 않으므로 빈 함수 전달
       />
     );
   }

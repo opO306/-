@@ -52,7 +52,9 @@ export async function createSituationText(uid: string) {
       );
 
       const jobId = state.currentJobId; // 현재 직업 ID 가져오기
-      const prompt = buildSituationPrompt(worldTones, jobId);
+      const baseJobId = state.baseJobId; // 기본 직업 ID 가져오기
+      const compositeJobName = state.compositeJobName; // 조합된 직업 이름 가져오기
+      const prompt = buildSituationPrompt(worldTones, baseJobId, compositeJobName);
       const aiText = await generateSituationWithAI(prompt);
       if (aiText) situationText = aiText;
     } catch (e) {

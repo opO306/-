@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Build artifacts
+dist/
+build/
+
+# Log files
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Firebase functions
+functions/lib/
+functions/.env
+
+# Dependency lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+

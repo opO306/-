@@ -5,6 +5,8 @@ import { evaluateThresholds } from "../butterfly/evaluateThreshold";
 import { suggestInitialJob } from "../job/suggestJob";
 import { classifyIntent } from "../ai/intentClassifier";
 import { generateSeasonReport } from "../season/generateSeasonReport";
+import { selectTitleForRebirth } from "../title/selectTitle";
+import { Title } from "../types/game";
 
 export async function resolveSituationChoice(
   uid: string,
@@ -44,6 +46,8 @@ export async function resolveSituationChoice(
       deltaWeight = 0.7;
     }
 
+    const ownedTitleIds = state.ownedTitleIds ?? [];
+
     if (isFirst) {
       jobSuggestion = suggestInitialJob(choiceId);
 
@@ -57,6 +61,7 @@ export async function resolveSituationChoice(
           totalSituationCount: totalSituationCount,
           lastChoiceId: choiceId,
           consecutiveChoiceCount: consecutiveChoiceCount,
+          ownedTitleIds: ownedTitleIds, // Initialize ownedTitleIds
         },
         { merge: true }
       );
@@ -70,6 +75,7 @@ export async function resolveSituationChoice(
           totalSituationCount: totalSituationCount,
           lastChoiceId: choiceId,
           consecutiveChoiceCount: consecutiveChoiceCount,
+          // ownedTitleIds will be merged if it already exists, no need to explicitly add here unless initializing
         },
         { merge: true }
       );
@@ -126,7 +132,7 @@ export async function resolveSituationChoice(
       triggeredThresholds: [],
     };
 
-    const newlyTriggered = evaluateThresholds(
+    const newlyTriggered = await evaluateThresholds(
       butterfly.marks ?? [],
       butterfly.triggeredThresholds ?? []
     );
@@ -145,24 +151,44 @@ export async function resolveSituationChoice(
 
     // 4️⃣ 시즌 종료 트리거 (임시)
     let seasonReportText: string | null = null;
+    let newlyAcquiredTitle: Title | null = null;
+
     if (totalSituationCount % 30 === 0) {
       seasonReportText = await generateSeasonReport(uid);
-      // 시즌 리포트 생성 후 totalSituationCount 초기화 또는 시즌 번호 업데이트 등 추가 로직 필요
+
+      // 칭호 선택 및 지급
+      const currentButterflyMarks = butterfly.marks ?? [];
+      newlyAcquiredTitle = await selectTitleForRebirth(
+        uid,
+        currentButterflyMarks,
+        ownedTitleIds
+      );
+
       tx.set(
         stateRef,
-        { totalSituationCount: 0, currentSeason: (state.currentSeason ?? 0) + 1 },
+        {
+          totalSituationCount: 0,
+          currentSeason: (state.currentSeason ?? 0) + 1,
+          ownedTitleIds: admin.firestore.FieldValue.arrayUnion(newlyAcquiredTitle.id),
+          lastAcquiredTitle: newlyAcquiredTitle, // Store the full title object temporarily for client response
+        },
         { merge: true }
       );
+
+      // Save the full title object to playerTitles collection
+      const playerTitlesRef = db.collection(`playerTitles/${uid}/titles`);
+      tx.set(playerTitlesRef.doc(newlyAcquiredTitle.id), newlyAcquiredTitle);
     }
 
     return {
       resultText:
         choiceId === "observe"
-          ? "당신은 상황을 지켜보기로 했다.""
+          ? "당신은 상황을 지켜보기로 했다."
           : "당신은 개입을 선택했다.",
       continue: true,
       jobSuggestion,
       seasonReportText,
+      newlyAcquiredTitle, // Return the newly acquired title to the client
     };
   });
 }

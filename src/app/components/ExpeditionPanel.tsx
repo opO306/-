@@ -10,7 +10,9 @@ interface ExpeditionPanelProps {
 }
 
 export default function ExpeditionPanel({ open, onClose }: ExpeditionPanelProps) {
-  const [{ fame, expeditions }, dispatch] = useGame();
+  const [gameState, dispatch] = useGame();
+  // analyzePlayerIntent와 generateGameSituation은 ExpeditionPanel에서 사용되지 않으므로 무시합니다.
+  const { fame, expeditions } = gameState;
 
   const activeIds = expeditions.map((e: OngoingExpedition) => e.id);
 

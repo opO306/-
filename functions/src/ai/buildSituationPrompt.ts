@@ -2,17 +2,21 @@ import { JOB_PERSPECTIVE } from "../job/jobPerspective";
 
 export function buildSituationPrompt(
   worldTones: string[] = [],
-  jobId?: string
+  baseJobId?: string,
+  compositeJobName?: string
 ) {
-  const jobLine = jobId
-    ? `직업 관점:\n- ${JOB_PERSPECTIVE[jobId]}`
-    : "";
+  let jobContext = "";
+  if (compositeJobName) {
+    jobContext += `현재 직업:\n- ${compositeJobName}\n`;
+  }
+  if (baseJobId && JOB_PERSPECTIVE[baseJobId]) {
+    jobContext += `직업 관점:\n- ${JOB_PERSPECTIVE[baseJobId]}\n`;
+  }
 
   return `
 3~4문장의 상황을 서술하라.
 
-${jobLine}
-
+${jobContext}
 세계 상태:
 ${worldTones.map(t => `- ${t}`).join("\n")}
 

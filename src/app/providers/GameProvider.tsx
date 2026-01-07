@@ -4,11 +4,11 @@ import { TITLE_NODES } from "../../data/titles";
 import { Title } from "../../types/title"; // src/types/title에서 Title 타입 임포트
 import { ArchetypeVector } from "../../types/archetype"; // ArchetypeVector 타입 임포트
 import { ButterflyMark } from "../../types/butterfly"; // ButterflyMark 타입 임포트
+import { SituationGenInput } from "../../types/situation"; // ButterflyMark 타입 임포트
 import { PlayerTitle } from "../../types/title"; // PlayerTitle 타입 임포트
 import { getExpedition } from "../../data/expeditions";
 import { MAX_BUTTERFLY_MARKS } from "../../data/balance"; // MAX_BUTTERFLY_MARKS 임포트
 import { getFunctions, httpsCallable } from "firebase/functions"; // Firebase Functions 임포트
-import { PlayerIntentLog } from "../../types/situation"; // PlayerIntentLog 타입 임포트
 
 // ───────────────────────────────── Types
 export type OngoingExpedition = {
@@ -276,7 +276,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   return <Ctx.Provider value={[state, dispatch]}>{children}</Ctx.Provider>;
 };
 
-export const useGame = () => {
+export type UseGameTuple = [GameState, React.Dispatch<Action>, (situationId: string, choiceId: string, intentText: string) => Promise<{ success: boolean; error?: undefined; } | { success: boolean; error: unknown; }>, (input: SituationGenInput, currentJobId?: string) => Promise<{ situationText: string; options: string[]; } | undefined>];
+
+export const useGame = (): UseGameTuple => {
   const c = useContext(Ctx);
   if (!c) throw new Error("useGame in Provider");
   const [state, dispatch] = c;
