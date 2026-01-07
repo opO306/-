@@ -19,15 +19,13 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    "rootDir": "src",
+    // "rootDir": "src", // 제거
 
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
-  "references": [{
-    "path": "./tsconfig.node.json"
-  }]
+  "include": ["src"], // "functions" 제거
+  "exclude": ["functions"], // "functions" 디렉토리 제외
 }

@@ -2,13 +2,13 @@ import React, { createContext, useContext, useEffect, useReducer, ReactNode, use
 import Decimal from "break_infinity.js";
 import { TITLE_NODES } from "../../data/titles";
 import { Title } from "../../types/title"; // src/types/title에서 Title 타입 임포트
-import { ArchetypeVector } from "../../types/archetype"; // ArchetypeVector 타입 임포트
-import { ButterflyMark } from "../../types/butterfly"; // ButterflyMark 타입 임포트
-import { SituationGenInput, Situation } from "../../types/situation"; // ButterflyMark 타입 임포트
+import { ArchetypeVector } from "../../types/archetype";
+import { ButterflyMark, ButterflyAxis } from "../../types/butterfly";
+import { SituationGenInput, Situation, IntentType } from "../../types/situation";
 import { PlayerTitle } from "../../types/title"; // PlayerTitle 타입 임포트
+import { ComposedJob, composeJob } from "../game/jobCompose"; // 칭호 + 직업 합성 함수 임포트
 import { getExpedition } from "../../data/expeditions";
 import { MAX_BUTTERFLY_MARKS } from "../../data/balance"; // MAX_BUTTERFLY_MARKS 임포트
-import { getFunctions, httpsCallable } from "firebase/functions"; // Firebase Functions 임포트
 
 // ───────────────────────────────── Types
 export type OngoingExpedition = {
@@ -20,6 +20,9 @@ export interface GameState {
   fame: Decimal;
   famePerSec: Decimal;
   alignment: number;
+  strength: number; // 새로 추가된 strength 속성
+  gold: Decimal; // gold 속성 추가 (Decimal 타입)
+  currentSituation?: Situation;
   archetype: ArchetypeVector;
   currentChainLength: number;
   recentButterflyMarks: ButterflyMark[];
@@ -35,6 +38,7 @@ export interface GameState {
     newJobSystem: boolean;
   };
   prestigePoints: Decimal;
+  firstSituationChoiceId?: "observe" | "intervene" | "distort"; // 첫 상황 선택지 ID
 }
 
 type Action =
@@ -53,7 +57,11 @@ type Action =
   | { type: "UPGRADE_TITLE"; id: string; cost: Decimal }
   | { type: "START_EXPEDITION"; id: string }
   | { type: "COMPLETE_EXPEDITION"; id: string }
-  | { type: "GAIN_TITLE_XP"; id: string; amount: Decimal };
+  | { type: "GAIN_TITLE_XP"; id: string; amount: Decimal }
+  | { type: "SET_SITUATION"; situation: Situation | undefined }
+  | { type: "SET_FIRST_SITUATION_CHOICE"; choiceId: "observe" | "intervene" | "distort" }
+  | { type: "UPDATE_ARCHETYPE_FROM_MARKS"; marks: ButterflyMark[] }
+  | { type: "REBIRTH"; baseJob: string; title: string }; // REBIRTH 액션 타입 변경
 
 // ──────────────────────────────── Helpers & Costs
 export const getTitleUnlockCost = (tier: number) => {
@@ -73,6 +81,8 @@ const initialState: GameState = {
   fame: new Decimal(0),
   famePerSec: new Decimal(0), // 초기 0
   alignment: 0,
+  strength: 0, // strength 초기값 추가
+  gold: new Decimal(0), // gold 초기값 추가 (Decimal 타입)
   archetype: {
     orderChaos: 0,
     altruismSelf: 0,
@@ -82,7 +92,7 @@ const initialState: GameState = {
   currentChainLength: 0,
   recentButterflyMarks: [],
   playerTitles: [],
-  currentJobId: undefined,
+  currentJobId: "citizen", // 초기 직업 설정
   jobIntroducedAt: undefined,
   lastJobSuggestionDeclinedAt: undefined,
   titles: TITLE_NODES.reduce<Record<string, { level: number; xp: Decimal }>>(
@@ -100,6 +110,7 @@ const initialState: GameState = {
     newJobSystem: true,
   },
   prestigePoints: new Decimal(0),
+  firstSituationChoiceId: undefined,
 };
 
 // ──────────────────────────────── Reducer
@@ -172,7 +183,43 @@ function reducer(state: GameState, action: Action): GameState {
     }
     
     // ... (기존 코드들)
-    
+    case "SET_SITUATION": {
+      return { ...state, currentSituation: action.situation };
+    }
+
+    case "SET_FIRST_SITUATION_CHOICE": {
+      return { ...state, firstSituationChoiceId: action.choiceId };
+    }
+
+    case "UPDATE_ARCHETYPE_FROM_MARKS": {
+      let newArchetype = { ...state.archetype };
+      action.marks.forEach(mark => {
+        if (mark.axisImpact) {
+          (Object.keys(mark.axisImpact) as ButterflyAxis[]).forEach(axis => {
+            newArchetype[axis] += (mark.axisImpact as any)[axis] * (mark.weight || 1);
+          });
+        }
+      });
+      return { ...state, archetype: newArchetype };
+    }
+
+    case "REBIRTH": {
+      const composedJob = composeJob(action.baseJob, action.title); // 합성 함수 사용
+      return {
+        ...initialState, // 초기 상태로 리셋
+        currentJobId: composedJob.baseJobId,
+        jobIntroducedAt: Date.now(),
+        archetype: { // MVP에서는 환생 후 성향 벡터 초기화
+          orderChaos: 0,
+          altruismSelf: 0,
+          asceticHedon: 0,
+          knowledgeDestruction: 0,
+        },
+        recentButterflyMarks: [], // 나비 효과 로그 초기화
+        currentSeason: state.currentSeason + 1, // 시즌 증가
+      };
+    }
+
     default:
       return state;
   }
@@ -195,7 +242,8 @@ export type UseGameTuple = {
     generateGameSituation: (input: SituationGenInput, currentJobId?: string) => Promise<{ situationText: string; options: string[] } | undefined>;
     unlockTitle: (id: string, tier: number) => void;
     upgradeTitle: (id: string, tier: number, currentLevel: number) => void;
-  }
+  };
+  getJobTitle: () => string; // getJobTitle 함수 추가
 };
 
 const Ctx = createContext<UseGameTuple | undefined>(undefined);
@@ -219,10 +267,48 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [state.titles, state.famePerSec]);
 
+  // getJobTitle 함수 구현
+  const getJobTitle = useCallback(() => {
+    const currentJobName = state.currentJobId || "citizen"; // currentJobId가 없으면 "citizen" 기본값
+    // AI가 부여한 칭호는 아직 GameState에 없으므로 임시로 ""를 사용합니다.
+    // 이 부분은 AI 연동 후 실제 칭호 문자열로 교체해야 합니다.
+    const composed = composeJob(currentJobName, ""); 
+    return composed.displayName;
+  }, [state.currentJobId]);
+
   // Actions Wrapper
   const actions = useMemo(() => ({
     analyzePlayerIntent: async (situationId: string, choiceId: string, intentText: string) => {
-      // (기존 로직 유지 - Firebase 호출 등)
+      // 첫 상황일 경우 firstSituationChoiceId를 저장
+      if (state.currentChainLength === 0 && !state.firstSituationChoiceId) {
+        if (["observe", "intervene", "distort"].includes(choiceId)) {
+          dispatch({ type: "SET_FIRST_SITUATION_CHOICE", choiceId: choiceId as "observe" | "intervene" | "distort" });
+        }
+      }
+
+      // choiceId를 IntentType으로 매핑 (MVP는 간단한 매핑 사용)
+      let determinedIntentType: IntentType | undefined;
+      // TODO: 선택지에 따른 IntentType 매핑 로직 구현
+      // 임시로 choiceId를 직접 IntentType으로 사용한다고 가정 (실제로는 더 복잡한 매핑 필요)
+      if (Object.keys(INTENT_MARK_RULES).includes(choiceId as IntentType)) {
+        determinedIntentType = choiceId as IntentType;
+      } else {
+        // 기본값 또는 에러 처리
+        console.warn(`Unknown choiceId as IntentType: ${choiceId}, using 'cautious' as fallback.`);
+        determinedIntentType = "cautious"; // 임시 폴백
+      }
+
+      if (determinedIntentType) {
+        const generatedMark: ButterflyMark = {
+          key: `intent_${determinedIntentType}`,
+          axisImpact: INTENT_MARK_RULES[determinedIntentType],
+          weight: 1,
+          createdAt: Date.now(),
+        };
+        dispatch({ type: "ADD_BUTTERFLY_MARK", mark: generatedMark });
+        dispatch({ type: "UPDATE_ARCHETYPE_FROM_MARKS", marks: [generatedMark] });
+      }
+
       return { success: true };
     },
     generateGameSituation: async (input: SituationGenInput, currentJobId?: string) => {
@@ -258,7 +344,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     else root.classList.add("theme-neutral");
   }, [state.alignment]);
 
-  return <Ctx.Provider value={{ state, dispatch, computed, actions }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ state, dispatch, computed, actions, getJobTitle }}>{children}</Ctx.Provider>;
 };
 
 export const useGame = () => {

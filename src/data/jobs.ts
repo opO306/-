@@ -21,6 +21,14 @@ export const JOBS: Record<string, Job> = {
     perspectivePrompt: "쉼 없는 자의 관점에서 상황을 인식한다",
     bonuses: [],
   },
+  trickster: {
+    id: 'trickster',
+    name: '속임수꾼',
+    tags: ['교활함', '변칙', '카오스'],
+    description: '세계를 교란하고 혼돈을 만든다. 예상치 못한 결과를 초래한다.',
+    perspectivePrompt: "속임수꾼의 관점에서 상황을 인식한다",
+    bonuses: [],
+  },
   observer: {
     id: 'observer',
     name: '방관자',
