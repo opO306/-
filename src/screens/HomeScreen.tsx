@@ -63,6 +63,7 @@ function ActionSection() {
   const { dispatch, actions } = useGame();
   const { generateGameSituation } = actions;
   const [showPhilosophy, setShowPhilosophy] = useState(false);
+  const [showDetailedPhilosophy, setShowDetailedPhilosophy] = useState(false);
 
   const handleResearch = async () => {
     // "연구하기" 클릭 시 상황 발생
@@ -119,6 +120,15 @@ function ActionSection() {
               <span className="text-purple-500">•</span>
               <span><strong>반복 플레이:</strong> 환생을 통해 새로운 칭호를 발견하세요.</span>
             </div>
+            <button
+              onClick={() => {
+                const PhilosophyScreen = require("./PhilosophyScreen").default;
+                setShowDetailedPhilosophy(true);
+              }}
+              className="mt-2 w-full text-center text-xs text-purple-600 hover:text-purple-800 font-medium py-2 bg-white rounded-lg border border-purple-200 hover:bg-purple-50 transition-colors"
+            >
+              자세히 보기 →
+            </button>
           </div>
         )}
       </section>
@@ -200,7 +210,7 @@ export default function HomeScreen() {
   const { currentChainLength, currentJobId, currentSituation } = state; // currentSituation 객체 가져오기
   const [showJobSuggestion, setShowJobSuggestion] = useState(false);
   const [suggestedJobId, setSuggestedJobId] = useState<string | undefined>(undefined);
-  const [currentScreen, setCurrentScreen] = useState<"home" | "titles" | "achievements" | "ugc">("home");
+  const [currentScreen, setCurrentScreen] = useState<"home" | "titles" | "achievements" | "ugc" | "philosophy">("home");
 
   useEffect(() => {
     // TODO: 첫 탐험 후 직업 제안 로직
@@ -268,6 +278,11 @@ export default function HomeScreen() {
   if (currentScreen === "ugc") {
     const UGCSubmissionScreen = require("./UGCSubmissionScreen").default;
     return <UGCSubmissionScreen onBack={() => setCurrentScreen("home")} />;
+  }
+  
+  if (currentScreen === "philosophy") {
+    const PhilosophyScreen = require("./PhilosophyScreen").default;
+    return <PhilosophyScreen onBack={() => setCurrentScreen("home")} />;
   }
 
   return (
