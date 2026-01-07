@@ -14,18 +14,18 @@ async function getAIStatus(): Promise<AIStatus> {
 }
 
 // TODO: 유저별 AI 호출 횟수를 가져오는 함수 구현 (Firestore 등 연동 필요)
-async function getTodayUsage(uid: string): Promise<number> {
+async function getTodayUsage(/* uid: string */): Promise<number> {
   console.warn("TODO: Implement getTodayUsage for actual daily AI call count.");
   return 0; // 임시 구현: 항상 0을 반환
 }
 
 // AI 사용 가능 여부를 판단하는 가드 함수
-export async function canUseAI(uid: string): Promise<boolean> {
+export async function canUseAI(): Promise<boolean> {
   const status = await getAIStatus();
   if (!status.enabled) return false;
   if (status.fallbackOnly) return false;
 
-  const count = await getTodayUsage(uid);
+  const count = await getTodayUsage();
   return count < status.dailyLimit;
 }
 

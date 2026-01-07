@@ -1,4 +1,4 @@
-import { JOB_PERSPECTIVE } from "../job/jobPerspective";
+import { JOBS } from "../src/data/jobs";
 
 export function buildSituationPrompt(
   worldTones: string[] = [],
@@ -9,8 +9,8 @@ export function buildSituationPrompt(
   if (compositeJobName) {
     jobContext += `현재 직업:\n- ${compositeJobName}\n`;
   }
-  if (baseJobId && JOB_PERSPECTIVE[baseJobId]) {
-    jobContext += `직업 관점:\n- ${JOB_PERSPECTIVE[baseJobId]}\n`;
+  if (baseJobId && JOBS[baseJobId]?.perspectivePrompt) {
+    jobContext += `직업 관점:\n- ${JOBS[baseJobId].perspectivePrompt}\n`;
   }
 
   return `

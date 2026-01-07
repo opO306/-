@@ -8,6 +8,10 @@ import { collectContentMetrics } from "./ops/contentMetrics";
 import { adjustThresholds } from "./cron/adjustThresholds";
 import { generateCompositeJob } from "./job/compositeJob";
 import { generateSynthesizedTitle } from "./title/synthesis";
+import { suggestUserTitle as importSuggestUserTitle } from "./ugc/suggestTitle";
+import { Title } from "./types/game";
+import { composeJobCallable } from "./job/composeJobCallable";
+import { requestReincarnationAnalysis as importRequestReincarnationAnalysis } from "./functions/reincarnationAnalysis";
 
 admin.initializeApp();
 export const db = admin.firestore();
@@ -37,21 +41,21 @@ export const resolveSituation = onCall(
 
 export const dailyThresholdMetrics = onSchedule(
   "every 24 hours",
-  async (event) => {
+  async () => {
     await collectThresholdMetrics();
   }
 );
 
 export const dailyContentMetrics = onSchedule(
   "every 24 hours",
-  async (event) => {
+  async () => {
     await collectContentMetrics();
   }
 );
 
 export const dailyAdjustThresholds = onSchedule(
   "every 24 hours",
-  async (event) => {
+  async () => {
     await adjustThresholds();
   }
 );
@@ -157,7 +161,7 @@ export const synthesizeTitles = onCall(
   }
 );
 
-export const suggestUserTitle = onCall(
+export const handleSuggestUserTitle = onCall(
   { region: "asia-northeast3" },
   async (req) => {
     const uid = req.auth?.uid;
@@ -166,9 +170,25 @@ export const suggestUserTitle = onCall(
     if (!uid) throw new Error("unauthenticated");
     if (!suggestedName) throw new Error("invalid-argument: suggestedName missing");
 
-    const success = await suggestUserTitleLogic(uid, suggestedName);
+    const success = await importSuggestUserTitle(uid, suggestedName);
 
     return { success };
   }
 );
 
+export const composeJob = composeJobCallable; // composeJobCallable을 composeJob으로 익스포트
+
+export const requestReincarnationAnalysis = onCall(
+  { region: "asia-northeast3" },
+  async (req) => {
+    const uid = req.auth?.uid;
+    const data = req.data as { job: string; oath: string; finalIdentity: string; reputationTrend: string; notableBehaviors: string[]; };
+
+    if (!uid) throw new Error("unauthenticated");
+    if (!data.job || !data.oath || !data.finalIdentity || !data.reputationTrend || !data.notableBehaviors) {
+      throw new Error("invalid-argument: missing data for reincarnation analysis");
+    }
+
+    return await importRequestReincarnationAnalysis(data);
+  }
+);

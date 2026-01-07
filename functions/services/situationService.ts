@@ -1,16 +1,14 @@
 // functions/services/situationService.ts
-import { SituationGenInput } from "../types/situation";
+import { SituationGenInput } from "../../src/types/situation";
 import { buildSituationPrompt } from "../../functions/buildSituationPrompt";
 import { fallbackSituationText } from "../../functions/fallback/situationFallback";
 import { situationGenerator } from "../ai/factory"; // AI 팩토리에서 가져온 generator
 import { canUseAI } from "./aiGuard"; // AI 가드 함수
-import * as functions from "firebase-functions"; // Firebase Functions 임포트
 
 export async function createSituation(
-  input: SituationGenInput,
-  uid: string
+  input: SituationGenInput
 ): Promise<{ text: string; source: "ai" | "fallback"; model?: string }> {
-  const aiAllowed = await canUseAI(uid);
+  const aiAllowed = await canUseAI();
 
   if (!aiAllowed) {
     return {
@@ -20,7 +18,7 @@ export async function createSituation(
   }
 
   try {
-    const prompt = buildSituationPrompt(input);
+    const prompt = buildSituationPrompt(input.worldContext.situationBias, input.jobTags[0]); // jobTags의 첫 번째 요소를 baseJobId로 전달 (임시)
     const result = await situationGenerator.generate(prompt);
     // TODO: logAIUsage(uid, result.model, tokenEstimate); // AI 사용량 로그
     return { text: result.text, source: "ai", model: result.model };

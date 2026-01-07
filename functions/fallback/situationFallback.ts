@@ -1,5 +1,5 @@
 // fallback/situationFallback.ts
-import { SituationGenInput } from "../types/situation";
+import { SituationGenInput } from "../../src/types/situation";
 
 export function fallbackSituationText(input: SituationGenInput): string {
   // TODO: input을 기반으로 좀 더 정교한 Fallback 텍스트 생성 로직 구현
