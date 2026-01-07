@@ -18,7 +18,7 @@ function suggestInitialJob(ctx: { firstChoice: "observe" | "intervene" | "distor
 }
 
 function HeaderStats() {
-  const [state, _, __, ___] = useGame();
+  const { state } = useGame();
   const { fame, famePerSec: fps, archetype } = state; // archetype 가져오기
 
   const summary = generateArchetypeSummary(archetype);
@@ -36,7 +36,7 @@ function HeaderStats() {
 }
 
 function IdentityCardCarousel() {
-  const [state] = useGame();
+  const { state } = useGame();
   const { currentJobId } = state;
 
   if (!currentJobId) {
@@ -58,7 +58,8 @@ function IdentityCardCarousel() {
 }
 
 function ActionSection() {
-  const [_, dispatch, __, generateGameSituation] = useGame(); // generateGameSituation 함수 가져오기
+  const { dispatch, actions } = useGame();
+  const { generateGameSituation } = actions;
 
   const handleResearch = async () => {
     // "연구하기" 클릭 시 상황 발생
@@ -115,11 +116,11 @@ function BottomNav() {
 }
 
 export default function HomeScreen() {
-  const [state, dispatch, analyzePlayerIntent, generateGameSituation] = useGame();
+  const { state, dispatch, actions } = useGame();
+  const { analyzePlayerIntent, generateGameSituation } = actions;
   const { currentChainLength, currentJobId, currentSituation } = state; // currentSituation 객체 가져오기
   const [showJobSuggestion, setShowJobSuggestion] = useState(false);
   const [suggestedJobId, setSuggestedJobId] = useState<string | undefined>(undefined);
-  const [onContinueSituation, setOnContinueSituation] = useState<(() => void) | undefined>(undefined); // 상황 계속하기 핸들러 추가
 
   useEffect(() => {
     // TODO: 첫 탐험 후 직업 제안 로직
@@ -146,10 +147,10 @@ export default function HomeScreen() {
     return (
       <SituationResult
         text={currentSituation.text}
-        options={currentSituation.options.map(o => o.text)} // 선택지 텍스트 전달
+        options={currentSituation.options.map((o: { id: string; text: string; }) => o.text)} // 선택지 텍스트 전달
         onSelectOption={async (optionText: string) => {
           // 선택지 선택 시 처리
-          const selectedOption = currentSituation.options.find(o => o.text === optionText);
+          const selectedOption = currentSituation.options.find((o: { id: string; text: string; }) => o.text === optionText);
           if (selectedOption) {
             await analyzePlayerIntent(currentSituation.id, selectedOption.id, optionText); // 플레이어 의도 분석
             dispatch({ type: "SET_SITUATION", situation: undefined }); // 상황 닫기
