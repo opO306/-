@@ -10,4 +10,5 @@ export interface Job {
   tags: string[]; // tag를 tags (string 배열)로 변경
   description: string;
   perspectivePrompt: string; // 직업 관점 프롬프트 추가
+  bonuses: { label: string; value: string }[]; // 직업 보너스 추가
 }

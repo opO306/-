@@ -1,13 +1,17 @@
 export function SituationResult({
   text,
+  options, // 새로운 props
   onContinue,
-  showJobSuggestionButtons = false, // 새로운 props
+  onSelectOption, // 새로운 props
+  showJobSuggestionButtons = false,
   onAcceptJob,
   onDeclineJob,
   suggestedJobName,
 }: {
   text: string;
+  options?: string[]; // 선택지는 선택 사항
   onContinue: () => void;
+  onSelectOption?: (option: string) => void; // 선택지 선택 핸들러
   showJobSuggestionButtons?: boolean;
   onAcceptJob?: () => void;
   onDeclineJob?: () => void;
@@ -34,6 +38,18 @@ export function SituationResult({
             [ 지금은 아니다 ]
           </button>
         </div>
+      ) : (options && options.length > 0 && onSelectOption ? (
+        <div className="flex flex-col gap-3">
+          {options.map((option, index) => (
+            <button
+              key={index}
+              onClick={() => onSelectOption(option)}
+              className="w-full rounded-2xl border bg-white py-4 text-sm text-gray-600 active:scale-[0.98]"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
       ) : (
         <button
           onClick={onContinue}
@@ -41,7 +57,7 @@ export function SituationResult({
         >
           계속
         </button>
-      )}
+      ))}
     </main>
   );
 }

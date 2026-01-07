@@ -12,6 +12,12 @@ export type SituationGenInput = {
   recentSituationHashes: string[]; // 반복 방지
 };
 
+export type Situation = {
+  id: string; // 상황 고유 ID
+  text: string;
+  options: { id: string; text: string; }[];
+}
+
 export type PlayerIntentLog = {
   situationId: string;
   choiceId: string;
