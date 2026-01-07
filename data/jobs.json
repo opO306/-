@@ -1,0 +1,26 @@
+[
+  {
+    "id": "warrior",
+    "tag": "battle",
+    "label": "전사",
+    "baseBonus": { "clickDamagePercent": 10 }
+  },
+  {
+    "id": "mage",
+    "tag": "magic",
+    "label": "마법사",
+    "baseBonus": { "famePerSecPercent": 4 }
+  },
+  {
+    "id": "merchant",
+    "tag": "trade",
+    "label": "상인",
+    "baseBonus": { "researchCostReductionPercent": 3 }
+  },
+  {
+    "id": "rogue",
+    "tag": "stealth",
+    "label": "도적",
+    "baseBonus": { "expeditionSuccessPercent": 5 }
+  }
+]

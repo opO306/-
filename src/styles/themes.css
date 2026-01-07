@@ -1,0 +1,63 @@
+/* 1) 토스 기본 팔레트 */
+:root {
+  --toss-blue: #3182f6;
+  --toss-blue-dark: #1667e3;
+  --gray-0: #ffffff;
+  --gray-1: #f8f9fa;
+  --gray-2: #e9ecef;
+  --gray-3: #dee2e6;
+  --gray-6: #868e96;
+  --gray-9: #212529;
+}
+
+/* 2) 전체 배경 & 기본 글꼴 */
+html, body {
+  background: var(--gray-1);
+  font-family: 'Inter', 'Spoqa Han Sans Neo', ui-sans-serif, system-ui;
+  color: var(--gray-9);
+}
+
+/* 3) 카드 공통 */
+.card {
+  background: var(--gray-0);
+  border: 1px solid var(--gray-2);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.04);
+  transition: box-shadow .2s;
+}
+.card:hover { box-shadow: 0 4px 8px rgba(0,0,0,.05); }
+
+/* 4) Ghost 버튼 + Point 버튼 */
+.btn {
+  font-weight: 500;
+  border-radius: 12px;
+  padding: 12px 0;
+  width: 100%;
+}
+.btn-ghost {
+  background: var(--gray-0);
+  border: 1px solid var(--gray-2);
+}
+.btn-ghost:hover { background: var(--gray-1); }
+
+.btn-primary {
+  background: var(--toss-blue);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--toss-blue-dark); }
+
+/* 5) 숫자 강조 */
+.big-num {
+  font-size: clamp(40px, 8vw, 72px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--toss-blue);
+}
+
+/* 6) 얇은 스크롤바 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb {
+  background: var(--gray-3);
+  border-radius: 3px;
+}

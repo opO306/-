@@ -1,0 +1,26 @@
+[
+  {
+    "id": "researchGeek",
+    "tag": "lab",
+    "label": "연구광",
+    "baseBonus": { "researchEfficiencyPercent": 20 }
+  },
+  {
+    "id": "hotBlood",
+    "tag": "combat",
+    "label": "행동대장",
+    "baseBonus": { "expeditionRewardPercent": 10 }
+  },
+  {
+    "id": "calculator",
+    "tag": "math",
+    "label": "계산왕",
+    "baseBonus": { "prestigePointPercent": 8 }
+  },
+  {
+    "id": "corpseCollector",
+    "tag": "necro",
+    "label": "시체수집가",
+    "baseBonus": { "undeadPowerPercent": 12 }
+  }
+]

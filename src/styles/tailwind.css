@@ -1,0 +1,42 @@
+@import 'tailwindcss' source(none);
+@source '../**/*.{js,ts,jsx,tsx}';
+
+@import 'tw-animate-css';
+
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --primary: #3b82f6;
+  --accent: #f97316;
+  --fg: #0f172a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --primary: #60a5fa;
+    --accent: #fb923c;
+    --fg: #f8fafc;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.card {
+  background: var(--card);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--fg); /* primary button text color */
+}
+
+.glass-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

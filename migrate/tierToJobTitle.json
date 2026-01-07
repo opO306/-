@@ -1,0 +1,11 @@
+{
+  "tier1": {
+    "jobId": "warrior",
+    "titleId": "researcher"
+  },
+  "tier2": {
+    "jobId": "mage",
+    "titleId": "commander",
+    "compositeId": "arcane_warrior"
+  }
+}
