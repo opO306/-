@@ -3,7 +3,7 @@
  * 칭호 기반으로 자동 생성된 업적을 표시합니다.
  */
 import { useState, useMemo } from "react";
-import { useGame } from "@/app/providers/GameProvider";
+import { useGame, GameState } from "@/app/providers/GameProvider";
 import { TITLE_NODES } from "@/data/titles";
 
 interface Achievement {
@@ -18,7 +18,7 @@ interface Achievement {
 }
 
 // 칭호 태그 기반 업적 자동 생성
-function generateAchievementsFromTitles(state: any): Achievement[] {
+function generateAchievementsFromTitles(state: GameState): Achievement[] {
   const achievements: Achievement[] = [];
   
   TITLE_NODES.forEach((title) => {

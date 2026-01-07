@@ -10,6 +10,9 @@ import { generateArchetypeSummary } from "@/archetype/generateArchetypeSummary";
 import { ArchetypeVector } from "@/types/archetype";
 import { JOBS } from "@/data/jobs"; // JOBS 임포트
 import TitleCodexScreen from "./TitleCodexScreen";
+import AchievementScreen from "./AchievementScreen";
+import UGCSubmissionScreen from "./UGCSubmissionScreen";
+import PhilosophyScreen from "./PhilosophyScreen";
 
 // 첫 탐험에서 직업 추천 로직 (임시)
 function suggestInitialJob(ctx: { firstChoice: "observe" | "intervene" | "distort" }) {
@@ -63,7 +66,6 @@ function ActionSection() {
   const { dispatch, actions } = useGame();
   const { generateGameSituation } = actions;
   const [showPhilosophy, setShowPhilosophy] = useState(false);
-  const [showDetailedPhilosophy, setShowDetailedPhilosophy] = useState(false);
 
   const handleResearch = async () => {
     // "연구하기" 클릭 시 상황 발생
@@ -121,10 +123,7 @@ function ActionSection() {
               <span><strong>반복 플레이:</strong> 환생을 통해 새로운 칭호를 발견하세요.</span>
             </div>
             <button
-              onClick={() => {
-                const PhilosophyScreen = require("./PhilosophyScreen").default;
-                setShowDetailedPhilosophy(true);
-              }}
+              onClick={() => setCurrentScreen("philosophy")}
               className="mt-2 w-full text-center text-xs text-purple-600 hover:text-purple-800 font-medium py-2 bg-white rounded-lg border border-purple-200 hover:bg-purple-50 transition-colors"
             >
               자세히 보기 →
@@ -271,17 +270,14 @@ export default function HomeScreen() {
   }
   
   if (currentScreen === "achievements") {
-    const AchievementScreen = require("./AchievementScreen").default;
     return <AchievementScreen onBack={() => setCurrentScreen("home")} />;
   }
   
   if (currentScreen === "ugc") {
-    const UGCSubmissionScreen = require("./UGCSubmissionScreen").default;
     return <UGCSubmissionScreen onBack={() => setCurrentScreen("home")} />;
   }
   
   if (currentScreen === "philosophy") {
-    const PhilosophyScreen = require("./PhilosophyScreen").default;
     return <PhilosophyScreen onBack={() => setCurrentScreen("home")} />;
   }
 
