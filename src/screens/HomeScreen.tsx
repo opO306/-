@@ -2,12 +2,17 @@ import { IdentityCard } from "@/components/IdentityCard";
 import { ActionCard } from "@/components/ActionCard";
 import { PrestigeProgress } from "@/components/PrestigeProgress";
 import { SituationResult } from "@/components/SituationResult"; // SituationResult 임포트
+import { AIStatusIndicator } from "@/components/AIStatusIndicator";
 import { useGame } from "@/app/providers/GameProvider";
 import { fmt } from "@/utils/number";
 import { useEffect, useState } from "react"; // useEffect 추가
 import { generateArchetypeSummary } from "@/archetype/generateArchetypeSummary";
 import { ArchetypeVector } from "@/types/archetype";
 import { JOBS } from "@/data/jobs"; // JOBS 임포트
+import TitleCodexScreen from "./TitleCodexScreen";
+import AchievementScreen from "./AchievementScreen";
+import UGCSubmissionScreen from "./UGCSubmissionScreen";
+import PhilosophyScreen from "./PhilosophyScreen";
 
 // 첫 탐험에서 직업 추천 로직 (임시)
 function suggestInitialJob(ctx: { firstChoice: "observe" | "intervene" | "distort" }) {
@@ -57,9 +62,10 @@ function IdentityCardCarousel() {
   );
 }
 
-function ActionSection() {
+function ActionSection({ onNavigate }: { onNavigate: (screen: string) => void }) {
   const { dispatch, actions } = useGame();
   const { generateGameSituation } = actions;
+  const [showPhilosophy, setShowPhilosophy] = useState(false);
 
   const handleResearch = async () => {
     // "연구하기" 클릭 시 상황 발생
@@ -86,30 +92,112 @@ function ActionSection() {
   };
 
   return (
-    <section className="mb-10 grid grid-cols-2 gap-4">
-      <ActionCard
-        title="연구하기"
-        description="다음 성향 변화: 질서 ↑"
-        onClick={handleResearch} // onClick 핸들러 추가
-      />
-      <ActionCard
-        title="탐험 보내기"
-        description="위험도 ★★★"
-        onClick={handleExpedition} // onClick 핸들러 추가
-      />
-    </section>
+    <>
+      {/* 게임 철학 패널 */}
+      <section className="mb-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-4 border border-purple-200">
+        <button 
+          onClick={() => setShowPhilosophy(!showPhilosophy)}
+          className="w-full flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-lg">💡</span>
+            <span className="text-sm font-medium text-purple-800">
+              이 게임은 다릅니다
+            </span>
+          </div>
+          <span className="text-purple-600">{showPhilosophy ? "−" : "+"}</span>
+        </button>
+        
+        {showPhilosophy && (
+          <div className="mt-3 space-y-2 text-xs text-gray-700 animate-fade-in">
+            <div className="flex items-start gap-2">
+              <span className="text-purple-500">•</span>
+              <span><strong>능력치 없음:</strong> 레벨이나 스탯이 없습니다. 칭호가 당신의 정체성입니다.</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-purple-500">•</span>
+              <span><strong>정답 없음:</strong> 모든 선택은 다른 이야기로 이어집니다.</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="text-purple-500">•</span>
+              <span><strong>반복 플레이:</strong> 환생을 통해 새로운 칭호를 발견하세요.</span>
+            </div>
+            <button
+              onClick={() => onNavigate("philosophy")}
+              className="mt-2 w-full text-center text-xs text-purple-600 hover:text-purple-800 font-medium py-2 bg-white rounded-lg border border-purple-200 hover:bg-purple-50 transition-colors"
+            >
+              자세히 보기 →
+            </button>
+          </div>
+        )}
+      </section>
+      
+      <section className="mb-10 grid grid-cols-2 gap-4">
+        <ActionCard
+          title="연구하기"
+          description="다음 성향 변화: 질서 ↑"
+          onClick={handleResearch} // onClick 핸들러 추가
+        />
+        <ActionCard
+          title="탐험 보내기"
+          description="위험도 ★★★"
+          onClick={handleExpedition} // onClick 핸들러 추가
+        />
+      </section>
+    </>
   );
 }
 
-function BottomNav() {
+function BottomNav({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const [currentTab, setCurrentTab] = useState("홈");
 
+  const handleTabClick = (tab: string) => {
+    setCurrentTab(tab);
+    onNavigate(tab);
+  };
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
-      <div className="mx-auto flex max-w-md justify-around py-3 text-sm">
-        <span className={currentTab === "홈" ? "font-medium text-black" : "text-gray-400"} onClick={() => setCurrentTab("홈")}>홈</span>
-        <span className={currentTab === "업적" ? "font-medium text-black" : "text-gray-400"} onClick={() => setCurrentTab("업적")}>업적</span>
-        <span className={currentTab === "나" ? "font-medium text-black" : "text-gray-400"} onClick={() => setCurrentTab("나")}>나</span>
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+      <div className="mx-auto flex max-w-md justify-around py-3">
+        <button 
+          onClick={() => handleTabClick("홈")}
+          className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${
+            currentTab === "홈" ? "text-purple-600" : "text-gray-400"
+          }`}
+        >
+          <span className="text-xl">🏠</span>
+          <span className="text-xs font-medium">홈</span>
+        </button>
+        
+        <button 
+          onClick={() => handleTabClick("칭호")}
+          className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${
+            currentTab === "칭호" ? "text-purple-600" : "text-gray-400"
+          }`}
+        >
+          <span className="text-xl">📜</span>
+          <span className="text-xs font-medium">칭호</span>
+        </button>
+        
+        <button 
+          onClick={() => handleTabClick("업적")}
+          className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${
+            currentTab === "업적" ? "text-purple-600" : "text-gray-400"
+          }`}
+        >
+          <span className="text-xl">🏆</span>
+          <span className="text-xs font-medium">업적</span>
+        </button>
+        
+        <button 
+          onClick={() => handleTabClick("제안")}
+          className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${
+            currentTab === "제안" ? "text-purple-600" : "text-gray-400"
+          }`}
+        >
+          <span className="text-xl">✨</span>
+          <span className="text-xs font-medium">제안</span>
+        </button>
       </div>
     </nav>
   );
@@ -121,6 +209,7 @@ export default function HomeScreen() {
   const { currentChainLength, currentJobId, currentSituation } = state; // currentSituation 객체 가져오기
   const [showJobSuggestion, setShowJobSuggestion] = useState(false);
   const [suggestedJobId, setSuggestedJobId] = useState<string | undefined>(undefined);
+  const [currentScreen, setCurrentScreen] = useState<"home" | "titles" | "achievements" | "ugc" | "philosophy">("home");
 
   useEffect(() => {
     // TODO: 첫 탐험 후 직업 제안 로직
@@ -170,18 +259,41 @@ export default function HomeScreen() {
           dispatch({ type: "SET_SITUATION", situation: undefined }); // 직업 제안 거절 후 상황 초기화
           // TODO: 보류 시 재제안 쿨타임 로직 추가 (X5 항목)
         } : undefined}
-        onContinue={onContinueSituation || handleSituationContinue} // 일반 상황 계속하기 핸들러 사용
+        onContinue={handleSituationContinue} // 일반 상황 계속하기 핸들러 사용
       />
     );
   }
 
+  // 화면 라우팅
+  if (currentScreen === "titles") {
+    return <TitleCodexScreen onBack={() => setCurrentScreen("home")} />;
+  }
+  
+  if (currentScreen === "achievements") {
+    return <AchievementScreen onBack={() => setCurrentScreen("home")} />;
+  }
+  
+  if (currentScreen === "ugc") {
+    return <UGCSubmissionScreen onBack={() => setCurrentScreen("home")} />;
+  }
+  
+  if (currentScreen === "philosophy") {
+    return <PhilosophyScreen onBack={() => setCurrentScreen("home")} />;
+  }
+
   return (
     <main className="min-h-screen bg-[#F7F8FA] px-5 pt-6 pb-24">
+      <AIStatusIndicator aiEnabled={true} usingFallback={false} />
       <HeaderStats />
       <IdentityCardCarousel />
-      <ActionSection />
+      <ActionSection onNavigate={(screen) => setCurrentScreen(screen as any)} />
       <PrestigeProgress progress={80} message="환생 시 신규 칭호 가능" /> {/* TODO: 환생 진행률 및 메시지 동적 연동 */}
-      <BottomNav />
+      <BottomNav onNavigate={(tab) => {
+        if (tab === "홈") setCurrentScreen("home");
+        else if (tab === "칭호") setCurrentScreen("titles");
+        else if (tab === "업적") setCurrentScreen("achievements");
+        else if (tab === "제안") setCurrentScreen("ugc");
+      }} />
     </main>
   );
 }
